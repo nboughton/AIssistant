@@ -1,0 +1,26 @@
+services:
+  ollama:
+    image: ollama/ollama
+    ports: 
+      - 11434:11434
+    volumes:
+      - ollama:/root/.ollama:rw
+
+  mimic:
+    image: mycroftai/mimic3
+    ports: 
+      - 59125:59125
+    volumes:
+      - mimic3:/home/mimic3/.local/share/mycroft/mimic3:rw
+    command: --voice=en_US/cmu-arctic_low#lnh
+
+  web:
+    build: ./frontend
+    ports:
+      - 8000:80
+    depends_on:
+      - ollama
+      - mimic
+volumes:
+  ollama:
+  mimic3:
