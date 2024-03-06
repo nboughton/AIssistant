@@ -3,9 +3,21 @@ export enum Sources {
   Mycroft = '/tts',
 }
 
+export interface ISession {
+  id: string;
+  name: string;
+  model: string;
+  speak?: boolean;
+  history: IChatRecord[];
+}
+
+export interface ISessions {
+  [index: string]: ISession;
+}
+
 export interface IOllamaChatResponse {
   model: string;
-  created_at: Date;
+  created_at: string;
   response: string;
   done: boolean;
   context: number[];
@@ -16,7 +28,28 @@ export interface IOllamaChatResponse {
   eval_duration: number;
 }
 
+export interface IOllamaModel {
+  name: string;
+  modified_at: string;
+  size: number;
+  digest: string;
+  details: {
+    format: string;
+    family: string;
+    families: null;
+    parameter_size: string;
+    quantization_level: string;
+  };
+}
+
+export interface IOllamaModelPull {
+  status: string;
+  digest?: string;
+  total?: number;
+  completed?: number;
+}
+
 export interface IChatRecord {
   query: string;
-  response: string;
+  answer: IOllamaChatResponse;
 }

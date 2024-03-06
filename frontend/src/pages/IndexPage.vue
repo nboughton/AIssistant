@@ -1,14 +1,32 @@
 <template>
   <q-page class="column items-center justify-start" padding>
     <div class="row full-width">
-      <q-input class="col-grow q-mr-lg" label="Query" filled v-model="query" autogrow />
-      <q-btn class="col-shrink" label="ASK" rounded :loading="loading" @click="doRequest" flat />
+      <q-input class="col-grow q-mr-md" label="Query" filled v-model="query" autogrow clearable />
+      <q-btn class="col-shrink q-mr-md" label="ASK" :loading="app.loading" @click="doRequest" />
+      <q-btn class="col-shrink" label="Clear History" @click="app.session.history.splice(0)" />
     </div>
-    <div class="row text-center text-caption">{{ status }}</div>
-    <q-card v-for="(res, i) in chatRecord" :key="`res-${i}`" class="row full-width bg-grey-3 rounded-borders">
-      <q-card-section>Query: {{ res.query }}</q-card-section>
-      <q-card-section>
-        <pre class="response-text">{{ res.response }}</pre>
+
+    <div class="row full-width items-center justify-between q-my-md">
+      <q-input class="col q-mr-md" dense label="Session Name" v-model="app.session.name" />
+      <q-input class="col q-mr-md" dense readonly label="Status" v-model="app.status" />
+      <q-toggle class="col-shrink q-mr-md" label="Default to speaking?" v-model="app.session.speak" />
+      <q-btn class="col-shrink" icon="delete" @click="deleteSession" />
+    </div>
+
+    <q-card
+      v-for="(res, i) in app.session.history"
+      :key="`res-${i}`"
+      class="column full-width bg-grey-3 rounded-borders q-mb-md"
+    >
+      <q-card-section class="row justify-center items-center full-width q-mb-none text-white bg-black">
+        <div class="col-grow text-bold">{{ res.query }}</div>
+        <div v-if="res.answer.response" class="col-shrink text-caption">
+          {{ res.answer.model }}, {{ Math.floor(res.answer.total_duration / 1000 / 1000 / 1000) }}s
+        </div>
+        <q-btn class="col-shrink" icon="mdi-play-circle" flat dense @click="app.speak(res.answer.response)" />
+      </q-card-section>
+      <q-card-section class="row full-width q-pt-sm q-mt-none bg-grey-2 rounded-borders">
+        <pre class="response-text">{{ res.answer.response }}</pre>
       </q-card-section>
     </q-card>
   </q-page>
@@ -17,108 +35,36 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 
-import { IChatRecord, IOllamaChatResponse, Sources } from 'src/components/models';
+import { useAIssistantStore } from 'src/stores/app';
+import { useQuasar } from 'quasar';
 
 export default defineComponent({
   name: 'IndexPage',
   components: {},
   setup() {
+    const app = useAIssistantStore();
     const query = ref('');
-    const sentences = ref(<string[]>[]);
-    const chatRecord = ref(<IChatRecord[]>[]);
 
-    const loading = ref(false);
-    const status = ref('idle');
-
-    // Run requests to ollama and mimic
     const doRequest = async () => {
-      if (!query.value) return;
-
-      loading.value = true;
-      status.value = 'Requesting response...';
-
-      try {
-        const req = new Request(`${Sources.Ollama}/api/generate`, {
-          method: 'POST',
-          body: `{
-              "model": "llama2",
-              "prompt": "${query.value}",
-              "stream": false
-            }`,
-        });
-
-        chatRecord.value.unshift({
-          query: query.value,
-          response: '',
-        });
-
-        const res = await fetch(req);
-        const obj = JSON.parse(await res.text()) as IOllamaChatResponse;
-        chatRecord.value[0].response = obj.response;
-        sentences.value =
-          chatRecord.value[0].response.length > 256
-            ? (chatRecord.value[0].response.match(/[^\.!\?]+[\.!\?]+/g) as string[])
-            : [chatRecord.value[0].response];
-
-        status.value = 'Beginning speech...';
-        const audioContext = new AudioContext();
-        const buffers: AudioBuffer[] = [];
-        let begun = false;
-
-        const queue = async (b: AudioBuffer) => {
-          buffers.push(b);
-
-          if (!begun) {
-            begun = true;
-
-            while (buffers.length > 0) {
-              await new Promise((resolve) => {
-                status.value = 'Encoding speech...';
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                const buffer = buffers.shift()!;
-                const source = audioContext.createBufferSource();
-                source.buffer = buffer;
-                source.addEventListener('ended', resolve);
-                source.connect(audioContext.destination);
-                status.value = 'speaking';
-                source.start(0);
-              });
-            }
-
-            status.value = 'idle';
-          }
-        };
-
-        for (let i = 0; i < sentences.value.length; i++) {
-          if (!sentences.value[i]) return;
-
-          const text = sentences.value[i].trim();
-
-          const request = await fetch(`${Sources.Mycroft}/api/tts`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'plain/text',
-            },
-            body: text,
-          });
-
-          const buffer = await request.arrayBuffer();
-          audioContext.decodeAudioData(buffer, queue);
-        }
-        loading.value = false;
-      } catch (e) {
-        status.value = e as string;
-        loading.value = false;
-      }
+      await app.query(query.value);
+      if (app.session.speak) await app.speak(app.session.history[0].answer.response);
     };
 
-    return {
-      query,
-      chatRecord,
-      loading,
+    const $q = useQuasar();
+    const deleteSession = () =>
+      $q
+        .dialog({
+          title: 'Delete this session?',
+          message: 'This cannot be undone!',
+          cancel: true,
+        })
+        .onOk(() => app.rmSession(app.current));
 
+    return {
+      app,
+      query,
       doRequest,
-      status,
+      deleteSession,
     };
   },
 });
