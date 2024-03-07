@@ -18,7 +18,7 @@
       <q-list>
         <q-item-label header>Chat Sessions</q-item-label>
 
-        <q-item clickable v-ripple @click="showDialog = true">
+        <q-item clickable v-ripple @click="openDialog">
           <q-item-section avatar>
             <q-icon name="mdi-chat-plus" />
           </q-item-section>
@@ -118,9 +118,20 @@ export default defineComponent({
       speak: true,
     });
 
+    const openDialog = async () => {
+      newSessionVars.value = {
+        name: '',
+        model: '',
+        speak: true,
+      };
+      models.value = (await app.listModels()).map((o) => o.name);
+      showDialog.value = true;
+    };
+
     return {
       app,
       showDialog,
+      openDialog,
       models,
       newSessionVars,
       essentialLinks: linksList,
