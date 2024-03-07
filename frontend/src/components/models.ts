@@ -15,6 +15,11 @@ export interface ISessions {
   [index: string]: ISession;
 }
 
+export interface IChatRecord {
+  query: string;
+  answer: IOllamaChatResponse;
+}
+
 export interface IOllamaChatRequest {
   model: string;
   prompt: string;
@@ -65,7 +70,6 @@ export interface IOllamaPullResponse {
   completed?: number;
 }
 
-export interface IChatRecord {
-  query: string;
-  answer: IOllamaChatResponse;
+export interface IOllamaRmModelRequest {
+  name: string;
 }

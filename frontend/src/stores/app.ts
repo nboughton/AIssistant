@@ -8,6 +8,7 @@ import {
   IOllamaModel,
   IOllamaChatRequest,
   IOllamaPullRequest,
+  IOllamaRmModelRequest,
 } from 'src/components/models';
 import { newSession } from 'src/lib/default';
 
@@ -70,6 +71,25 @@ export const useAIssistantStore = defineStore('aissistant', {
       }
 
       this.loading = false;
+    },
+
+    async rmModel(name: string) {
+      try {
+        this.status = 'Removing model, please wait.';
+        this.loading = true;
+
+        const res = fetch(`${Sources.Ollama}/api/delete`, {
+          method: 'DELETE',
+          body: JSON.stringify(<IOllamaRmModelRequest>{
+            name,
+          }),
+        });
+
+        (await res).status == 200 ? (this.status = 'Success!') : (this.status = `${(await res).statusText}`);
+        this.loading = false;
+      } catch (e) {
+        this.status = e as string;
+      }
     },
 
     async query(prompt: string) {

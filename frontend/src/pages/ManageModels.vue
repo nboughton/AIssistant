@@ -12,6 +12,7 @@
     <q-card class="row full-width q-mb-md" v-for="model in models" :key="model.digest">
       <q-card-section class="row items-center full-width bg-black text-white text-h6">
         <div class="col-grow">{{ model.name }}</div>
+        <q-btn class="col-shrink" icon="delete" @click="rmModel(model.name)" />
       </q-card-section>
 
       <q-card-section>
@@ -60,10 +61,27 @@ export default defineComponent({
           models.value = await app.listModels();
         });
 
+    const rmModel = (name: string) =>
+      $q
+        .dialog({
+          title: `Delete ${name} model?`,
+          message:
+            'This action will also remove all sessions that use this model as their context will no longer be valid.',
+          cancel: true,
+        })
+        .onOk(async () => {
+          await app.rmModel(name);
+          Object.keys(app.sessions).forEach((id) => {
+            if (app.sessions[id].model == name) app.rmSession(id);
+          });
+          models.value = await app.listModels();
+        });
+
     return {
       app,
       models,
       pullModel,
+      rmModel,
     };
   },
 });
