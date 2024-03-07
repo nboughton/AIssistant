@@ -7,6 +7,7 @@
         <q-toolbar-title> AIssistant - Session: {{ app.session.name }} </q-toolbar-title>
 
         <q-btn icon="home" round flat to="/" />
+        <q-btn icon="mdi-account-voice" round flat to="/speak" />
         <q-btn icon="mdi-brain" round flat to="/models">
           <q-tooltip>manage models</q-tooltip>
         </q-btn>

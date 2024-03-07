@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia';
 //import { uid } from 'quasar';
-import { Sources, IOllamaChatResponse, ISessions, ISession, IOllamaModel } from 'src/components/models';
+import {
+  Sources,
+  IOllamaChatResponse,
+  ISessions,
+  ISession,
+  IOllamaModel,
+  IOllamaChatRequest,
+  IOllamaPullRequest,
+} from 'src/components/models';
 import { newSession } from 'src/lib/default';
 
 export const useAIssistantStore = defineStore('aissistant', {
@@ -49,10 +57,10 @@ export const useAIssistantStore = defineStore('aissistant', {
 
         const res = await fetch(`${Sources.Ollama}/api/pull`, {
           method: 'POST',
-          body: `{
-              "name": "${name}",
-              "stream": false
-            }`,
+          body: JSON.stringify(<IOllamaPullRequest>{
+            name,
+            stream: false,
+          }),
         });
 
         const s = (await res.json()) as { status: string };
@@ -71,19 +79,17 @@ export const useAIssistantStore = defineStore('aissistant', {
       this.loading = true;
 
       try {
-        const ctx = this.session.history[0]?.answer.context
-          ? JSON.stringify(this.session.history[0].answer.context)
-          : '[]';
+        const context = this.session.history[0]?.answer.context ? this.session.history[0].answer.context : [];
 
         const res = await fetch(`${Sources.Ollama}/api/generate`, {
           method: 'POST',
-          body: `{
-              "model": "${this.session.model}",
-              "prompt": "${prompt.replaceAll('"', '')}",
-              "context": ${ctx},
-              "stream": false,
-              "keep_alive": -1
-            }`,
+          body: JSON.stringify(<IOllamaChatRequest>{
+            model: this.session.model,
+            prompt,
+            context,
+            stream: false,
+            keep_alive: -1,
+          }),
         });
         this.session.history.unshift({
           query: prompt,

@@ -15,6 +15,17 @@ export interface ISessions {
   [index: string]: ISession;
 }
 
+export interface IOllamaChatRequest {
+  model: string;
+  prompt: string;
+  format?: string;
+  options?: object;
+  context?: number[];
+  stream?: boolean;
+  raw?: boolean;
+  keep_alive?: string | number;
+}
+
 export interface IOllamaChatResponse {
   model: string;
   created_at: string;
@@ -42,7 +53,12 @@ export interface IOllamaModel {
   };
 }
 
-export interface IOllamaModelPull {
+export interface IOllamaPullRequest {
+  name: string;
+  stream?: boolean;
+}
+
+export interface IOllamaPullResponse {
   status: string;
   digest?: string;
   total?: number;
