@@ -3,7 +3,7 @@
     <div class="row full-width">
       <q-input class="col-grow q-mr-md" label="Query" filled v-model="query" autogrow clearable />
       <q-btn class="col-shrink q-mr-md" label="ASK" :loading="app.loading" @click="doRequest" />
-      <q-btn class="col-shrink" label="Clear History" @click="app.session.history.splice(0)" />
+      <q-btn class="col-shrink" label="Clear History" @click="clearHistory" />
     </div>
 
     <div class="row full-width items-center justify-between q-my-md">
@@ -60,10 +60,20 @@ export default defineComponent({
         })
         .onOk(() => app.rmSession(app.current));
 
+    const clearHistory = () =>
+      $q
+        .dialog({
+          title: 'Clear Chat History?',
+          message: 'This cannot be undone and will remove all context effectively making this a fresh session.',
+          cancel: true,
+        })
+        .onOk(() => app.session.history.splice(0));
+
     return {
       app,
       query,
       doRequest,
+      clearHistory,
       deleteSession,
     };
   },
