@@ -13,12 +13,18 @@
     "build": "quasar build"
   },
   "dependencies": {
+    "@langchain/community": "^0.0.35",
     "@quasar/extras": "^1.16.4",
+    "langchain": "^0.1.25",
+    "pdf-parse": "^1.1.1",
     "pinia": "^2.0.11",
     "pinia-plugin-persist": "^1.0.0",
     "quasar": "^2.8.0",
     "vue": "^3.4.18",
     "vue-router": "^4.0.12"
+  },
+  "resolutions": {
+    "@langchain/core": "0.1.5"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.4.3",

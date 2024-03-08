@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { uid } from 'quasar';
+
 import {
   Sources,
   IOllamaChatResponse,
@@ -10,6 +10,12 @@ import {
   IOllamaPullRequest,
   IOllamaRmModelRequest,
 } from 'src/components/models';
+
+import { uid } from 'quasar';
+
+import { ChatOllama } from '@langchain/community/chat_models/ollama';
+import { WebPDFLoader } from 'langchain/document_loaders/web/pdf';
+import { RecursiveCharacterTextSplitter } from 'langchain/dist/text_splitter';
 
 export const useAIssistantStore = defineStore('aissistant', {
   state: () => ({
@@ -89,6 +95,38 @@ export const useAIssistantStore = defineStore('aissistant', {
       } catch (e) {
         this.status = e as string;
       }
+    },
+
+    async LoadDoc(b: Blob) {
+      this.status = 'Attempting to load file';
+
+      try {
+        const loader = new WebPDFLoader(b, {
+          splitPages: false,
+        });
+
+        const docs = await loader.load();
+
+        const splitter = new RecursiveCharacterTextSplitter({
+          chunkSize: 10,
+          chunkOverlap: 1,
+        });
+
+        const docOutput = await splitter.splitDocuments(docs);
+      } catch (e) {
+        this.status = e as string;
+      }
+
+      this.status = 'idle';
+    },
+
+    async LCquery(prompt: string) {
+      const chatModel = new ChatOllama({
+        baseUrl: Sources.Ollama,
+        model: this.session.model,
+      });
+
+      console.log(await chatModel.invoke(prompt));
     },
 
     async query(prompt: string) {
