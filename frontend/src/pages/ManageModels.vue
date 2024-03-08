@@ -9,13 +9,13 @@
 
     <div class="row text-center text-caption">{{ app.status }}</div>
 
-    <q-card class="row full-width q-mb-md" v-for="model in models" :key="model.digest">
-      <q-card-section class="row items-center full-width bg-black text-white text-h6">
+    <q-card class="row full-width q-mb-md no-shadow" v-for="model in models" :key="model.digest">
+      <q-card-section class="row items-center full-width bg-blue-grey-10 text-white text-h6">
         <div class="col-grow">{{ model.name }}</div>
         <q-btn class="col-shrink" icon="delete" @click="rmModel(model.name)" />
       </q-card-section>
 
-      <q-card-section>
+      <q-card-section bg-blue-grey-9>
         <model-line-item label="Family" :value="model.details.family" />
         <model-line-item label="Digest" :value="model.digest" />
         <model-line-item label="Modified" :value="new Date(model.modified_at).toLocaleDateString()" />

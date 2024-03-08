@@ -12,7 +12,7 @@ services:
       - 59125:59125
     volumes:
       - mimic3:/home/mimic3/.local/share/mycroft/mimic3:rw
-    command: --voice=en_US/cmu-arctic_low#lnh
+    command: --voice=en_US/vctk_low#p239 --length-scale=1.5
 
   web:
     build: ./frontend
