@@ -12,7 +12,7 @@
     <q-card class="row full-width q-mb-md no-shadow" v-for="model in models" :key="model.digest">
       <q-card-section class="row items-center full-width bg-blue-grey-10 text-white text-h6">
         <div class="col-grow">{{ model.name }}</div>
-        <q-btn class="col-shrink" icon="delete" @click="rmModel(model.name)" />
+        <q-btn class="col-shrink" icon="delete" @click="rmModel(model.name)" glossy rounded />
       </q-card-section>
 
       <q-card-section bg-blue-grey-9>
@@ -51,10 +51,11 @@ export default defineComponent({
           title: 'Pull a Model',
           prompt: {
             label: 'Model Name',
-            model: 'llama2',
+            model: 'mistral',
             type: 'text',
           },
           cancel: true,
+          class: 'no-shadow',
         })
         .onOk(async (name) => {
           await app.pullModel(name);
@@ -68,6 +69,7 @@ export default defineComponent({
           message:
             'This action will also remove all sessions that use this model as their context will no longer be valid.',
           cancel: true,
+          class: 'no-shadow',
         })
         .onOk(async () => {
           await app.rmModel(name);

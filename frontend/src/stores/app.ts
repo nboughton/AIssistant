@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-//import { uid } from 'quasar';
+import { uid } from 'quasar';
 import {
   Sources,
   IOllamaChatResponse,
@@ -10,7 +10,6 @@ import {
   IOllamaPullRequest,
   IOllamaRmModelRequest,
 } from 'src/components/models';
-import { newSession } from 'src/lib/default';
 
 export const useAIssistantStore = defineStore('aissistant', {
   state: () => ({
@@ -186,12 +185,15 @@ export const useAIssistantStore = defineStore('aissistant', {
     },
 
     addSession(name: string, model: string, speak?: boolean) {
-      const s = newSession(name);
+      const s = <ISession>{
+        id: uid(),
+        name,
+        model,
+        history: [],
+        speak: speak ? true : false,
+      };
+
       this.sessions[s.id] = s;
-
-      this.sessions[s.id].model = model;
-      this.sessions[s.id].speak = speak ? true : false;
-
       this.current = s.id;
     },
 

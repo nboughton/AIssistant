@@ -59,7 +59,7 @@ export default defineComponent({
 
     const doRequest = async () => {
       await app.query(query.value);
-      if (app.session.speak) await app.speak(app.session.history[0].answer.response);
+      if (query.value && app.session.speak) await app.speak(app.session.history[0].answer.response);
     };
 
     const $q = useQuasar();
@@ -69,6 +69,7 @@ export default defineComponent({
           title: 'Delete this session?',
           message: 'This cannot be undone!',
           cancel: true,
+          class: 'no-shadow',
         })
         .onOk(() => app.rmSession(app.current));
 
@@ -78,6 +79,7 @@ export default defineComponent({
           title: 'Clear Chat History?',
           message: 'This cannot be undone and will remove all context effectively making this a fresh session.',
           cancel: true,
+          class: 'no-shadow',
         })
         .onOk(() => app.session.history.splice(0));
 
